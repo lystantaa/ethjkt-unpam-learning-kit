@@ -305,6 +305,9 @@ CATATAN HARI 5: nggak ada kelas live di hari terakhir. Hari 5 =
 mini proyek yang jadi PR (tugas) TERAKHIR kalian, dikerjain mandiri
 dari rumah, lalu di-push ke GitHub. Sesi live cuma Hari 1-4.
 
+Buat Hari 5 ada bacaan mandiri soal karier + cara lanjut belajar +
+gabung komunitas ETHJKT. Baca di file: KARIER.md (ada di repo ini).
+
 Capstone kita: "OnChain Menfess" papan menfess kampus yang tersimpan
 permanen di blockchain, dijaga AI moderator biar aman. Seru. Sampai
 ketemu di hari-H.
