@@ -14,7 +14,7 @@ dibohongin, data bisa bocor.
 
 Tugas kamu: jalanin, belanja beneran, lalu BEDAH. Ada 7 masalah tertanam
 (BUG, KEAMANAN, ETIKA) yang halus-halus. Ini skill inti Hari 2: MEMBACA
-& MEMVERIFIKASI kode AI. Nemu semua?
+& MEMVERIFIKASI kode AI. Nemu semua sendiri?
 
 ---
 
@@ -28,8 +28,12 @@ Dinilai dari: seberapa tajam kamu NEMUIN, MEMBUKTIIN & NJELASIN
 masalah, BUKAN dari kodenya jalan (kodenya emang udah jalan, tapi cacat).
 ```
 
-Bedanya di level ini: sebagian bug butuh kamu MEMBUKTIIN, bukan cuma
+Bedanya di level ini: sebagian masalah butuh kamu MEMBUKTIIN, bukan cuma
 "kayaknya salah". Buka DevTools (F12). Detektif beneran ngumpulin bukti.
+
+Catatan penting: petunjuk di bawah SENGAJA nggak nyebutin jawabannya.
+Cuma nunjuk "area" tempat kamu harus curiga. Sisanya kamu yang gali.
+Kalau langsung dikasih jawaban, itu bukan bug bounty namanya.
 
 ---
 
@@ -45,6 +49,9 @@ Bedanya di level ini: sebagian bug butuh kamu MEMBUKTIIN, bukan cuma
 |           | pembeli dengan cara nggak jujur                   |
 +-----------+---------------------------------------------------+
 ```
+
+Sebaran target: 2 BUG, 3 KEAMANAN, 2 ETIKA. (Jumlah tiap kategori
+dikasih tau biar kamu tau kapan berhenti nyari, bukan biar kamu nyontek.)
 
 Konsep baru di level ini: DARK PATTERN. Bukan bug teknis kodenya
 "bener", tapi sengaja didesain buat NGAKALIN pengguna (bikin panik,
@@ -71,17 +78,25 @@ tanya terus: "angka ini dari mana?", "kenapa segini?", "ini jujur nggak?"
 
 GOAL: temukan 2 kelakuan angka yang SALAH.
 
-Petunjuk A (matematika uang): masukin 1 buah aja mis. Mango atau
-Kiwi. Lihat baik-baik angka Total. Normal nggak bentuk angkanya?
+Area yang wajib kamu curigai:
 
-Petunjuk B (input nakal): di basket, ada kotak angka jumlah barang.
-Coba HAPUS isinya sampai kosong. Total-nya jadi apa?
-
-Prompt bantu (boleh ke Codex/Claude):
 ```
-"Baca cara kode ini menghitung dan menampilkan Total. Kenapa hasilnya
-bisa muncul angka desimal panjang aneh? Dan apa yang terjadi kalau input
-jumlah barang dikosongkan? Jelasin."
+- MATEMATIKA UANG. Belanja beberapa kombinasi barang, lalu tatap
+  angka Total baik-baik. Selalu rapi & masuk akal, atau kadang
+  bentuknya aneh?
+- INPUT NAKAL. Di mana pun user bisa NGETIK ANGKA (mis. jumlah
+  barang di basket), coba isi yang "nakal": kosongin, kasih huruf,
+  kasih minus. Toko-nya tetap waras?
+```
+
+Jangan cuma nebak dari baca kode. BUKTIIN di layar: reproduksi angkanya,
+screenshot / catat langkahnya.
+
+Prompt bantu (boleh ke Codex/Claude, buat NGERTI, bukan nyari jawaban):
+```
+"Baca cara kode ini menghitung dan menampilkan Total. Menurut kamu,
+kondisi input seperti apa yang bisa bikin hasilnya salah atau aneh?
+Jelasin alurnya, jangan cuma kasih kesimpulan."
 ```
 
 ---
@@ -90,32 +105,29 @@ jumlah barang dikosongkan? Jelasin."
 
 GOAL: temukan 3 celah. Ini bagian paling seru buktiin sendiri di DevTools.
 
-Petunjuk A (XSS): di kolom "Note for the farmer", ketik persis ini:
-```
-<img src=x onerror="alert('kena')">
-```
-Kalau muncul POP-UP, kamu nemu XSS. Artinya orang bisa nitip KODE, bukan
-cuma teks, dan kode itu jalan di browser orang lain.
+Tiga pertanyaan pemandu (tiap pertanyaan nuntun ke satu celah):
 
-Petunjuk B (rahasia bocor): klik kanan > View Page Source (atau baca
-<script>-nya). Ada "kode kupon" yang ketulis di kode? Coba pakai di kolom
-coupon. Berapa potongannya? Wajar nggak segitu?
+```
+1. INPUT USER. Di setiap tempat user bisa NGETIK (catatan, kupon),
+   apa yang terjadi kalau yang diketik BUKAN teks biasa? Kode-nya
+   nampilin input user dengan aman, atau mentah? (kata kunci: XSS)
+2. RAHASIA & LOGIKA DI CLIENT. Buka file kode / View Source. Ada
+   "rahasia" yang keliatan terang-terangan? Ada keputusan penting
+   yang diputus di BROWSER, yang harusnya nggak boleh dipercaya?
+3. ANGKA PENTING DARI MANA. Harga yang dipakai buat ngitung Total
+   itu diambil dari data resmi produk, atau dari sesuatu di halaman
+   yang bisa diedit user lewat DevTools?
+```
 
-Petunjuk C (yang paling nendang jangan percaya harga dari layar):
-buka DevTools > Elements. Cari tombol "+" salah satu produk:
-```
-<button class="quantity-button plus-button" data-id="1" data-price="1.50">
-```
-Ganti data-price jadi 0.01, lalu klik tombol "+" itu. Lihat basket &
-Total. Kamu baru aja "beli" buah seharga 1 sen. Renungin: siapa yang
-mutusin harga yang dibayar server toko, atau BROWSER pembeli?
+Buktiin tiap celah beneran. "Kayaknya rawan" belum keitung kamu harus
+bisa nunjukin celahnya kepake.
 
 Prompt bantu:
 ```
-"Di file ini: (1) apakah ada rahasia yang ke-hardcode? (2) apakah cara
-menampilkan catatan rawan XSS? (3) harga yang dipakai buat menghitung
-total itu diambil dari mana apakah dari data resmi produk atau dari
-elemen di halaman yang bisa diedit user? Jelasin bahayanya."
+"Di file ini: (1) gimana cara kode nampilin catatan dari user, aman
+dari XSS nggak? (2) apakah ada rahasia atau logika penting yang ada di
+sisi browser? (3) harga buat ngitung total diambil dari mana? Jelasin
+BAHAYANYA, jangan langsung kasih patch."
 ```
 
 ---
@@ -124,17 +136,17 @@ elemen di halaman yang bisa diedit user? Jelasin bahayanya."
 
 GOAL: buktiin toko ini sengaja "nyetir" pembeli dengan nggak jujur.
 
-Petunjuk A (langka palsu / fake scarcity): tiap produk nulis
-"only N left today!". Klik tombol +/- APAPUN, terus lihat angka "left"
-di SEMUA produk. Berubah nggak? Refresh halaman berapa kali. Kalau
-angkanya loncat-loncat sendiri padahal kamu nggak beli... itu stok
-BENERAN atau cuma bikin kamu buru-buru?
+Dua hal yang perlu kamu tanyain ke toko ini:
 
-Petunjuk B (biaya siluman / drip pricing): jumlahin harga barang di
-basket pakai kalkulator. Cocok nggak sama Total? Ada selisih. Selisih itu
-"Handling fee" tapi dia baru NONGOL pas kamu udah masuk modal checkout,
-nggak pernah disebut di halaman produk atau di rincian basket. Fair nggak
-nyembunyiin biaya sampai detik terakhir?
+```
+- TOKO INI JUJUR SOAL "STOK"? Perhatiin klaim yang bikin buru-buru
+  (mis. angka "sisa sekian"). Klik-klik & refresh halaman. Angkanya
+  kelakuan kayak stok beneran, atau kayak dikarang biar kamu panik?
+- TOKO INI JUJUR SOAL "HARGA"? Jumlahin harga barang di basket pakai
+  kalkulator, bandingin sama Total yang kamu bayar. Pas? Kalau ada
+  selisih, selisih itu dijelasin JELAS dari awal, atau muncul diam-diam
+  di detik terakhir?
+```
 
 Renungan (buat laporan): dua-duanya "kode-nya jalan sempurna". Tapi
 tujuannya bikin orang panik & bayar lebih tanpa sadar. Ini bukan bug
@@ -147,22 +159,17 @@ gini buat startup-mu, kamu bakal bilang apa?
 
 GOAL: perbaiki temuanmu, dibantu AI, TAPI kamu yang paham.
 
-Contoh prompt (buat harga dari client):
+Buat tiap temuan yang udah kamu buktiin: minta AI bantu betulin, lalu
+kamu WAJIB bisa jelasin kenapa fix-nya bener. Contoh prompt:
 ```
-"Betulin biar harga yang dihitung TIDAK diambil dari atribut di HTML
-yang bisa diedit user, tapi dari data produk resmi di dalam kode.
-Jelasin kenapa 'jangan percaya input dari client' itu aturan wajib."
+"Aku nemu masalah ini: <jelasin temuanmu>. Betulin di kode ini, dan
+jelasin kenapa cara itu yang bener + prinsip umum di baliknya."
 ```
 
-COBA SENDIRI (checklist lolos):
-```
-[ ] Total 1 Mango sekarang tampil rapi $3.10 (bukan 3.0999999...)?
-[ ] Kosongin jumlah barang -> Total nggak jadi "NaN"?
-[ ] Note <img ... onerror> muncul sebagai TEKS, nggak jalan?
-[ ] Ganti data-price di DevTools -> harga di basket TETAP harga asli?
-[ ] "only N left" nggak loncat-loncat tiap klik (atau dihapus)?
-[ ] Handling fee kelihatan JELAS dari awal, bukan cuma di akhir?
-```
+Cara ngecek fix-mu beneran jalan: ULANGI langkah waktu kamu nemuin
+masalahnya tadi. Kalau sekarang toko-nya udah kelakuan bener & jujur,
+berarti fix-mu lolos. Kamu yang nyusun checklist-nya sendiri dari
+temuanmu itu bagian dari nilainya.
 
 Kalau mentok, tanya AI (Codex/Claude) pakai prompt-prompt di atas, atau
 minta bocoran ke pengajar. Tapi tetap wajib bisa JELASIN sendiri kunci
@@ -196,10 +203,11 @@ ngerti kenapa bahaya. Nemu 4 tapi paham & terbukti > nemu 7 tapi nyontek.
 ## STRETCH (buat yang haus)
 
 ```
-- Cari temuan ke-8: masih ada yang belum disebut (mis. jumlah barang
-  nggak ada batas atas, atau angka basket di header vs isi basket).
-- Filter harga versi aman: gimana caranya server toko beneran mastiin
-  pembeli nggak ngakalin harga? (kata kunci: validasi di server).
+- Cari temuan ke-8: masih ada celah lain yang belum masuk target 7?
+  (petunjuk: pikirin batas-batas yang "lupa" dipasang, atau angka yang
+  ditampilin di dua tempat tapi nggak sinkron).
+- Harga versi aman: gimana caranya toko beneran mastiin pembeli nggak
+  ngakalin harga? (kata kunci: validasi di server).
 - Tulis "5 aturan review" versimu buat tiap kali AI ngasih kode toko.
 ```
 
